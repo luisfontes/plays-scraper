@@ -47,7 +47,7 @@ try {
   });
 
   if (list.length > 0) {
-    Deno.writeTextFile(`./data/plays.json`, JSON.stringify(list));
+    await Deno.writeTextFile(`./data/plays.json`, JSON.stringify(list));
   }
 } catch (error) {
   console.log(error);
