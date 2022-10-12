@@ -35,6 +35,7 @@ async function getHTML() {
 
 function parseHTML(html: string) {
   const document = new DOMParser().parseFromString(html, 'text/html');
+  const strip = (x: string) => x.replace(/\r?\n$|\r$/gm, '');
 
   const elems = document
     ?.querySelector('.guia-categoria span[id="teatro"]')?.parentElement
@@ -63,7 +64,7 @@ function parseHTML(html: string) {
 
     return {
       raw_title: title,
-      raw_synopsis: synopsis,
+      raw_synopsis: strip(synopsis),
       raw_personnel: personnel,
       raw_run: run,
     };
@@ -71,7 +72,6 @@ function parseHTML(html: string) {
 }
 
 function parseList(raw: ListRaw) {
-  const strip = (x: string) => x.replace(/\r?\n|\r/gm, '');
   const reUrl =
     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
 
@@ -79,7 +79,6 @@ function parseList(raw: ListRaw) {
 
   return {
     ...raw,
-    parsed_synopis: strip(raw.raw_synopsis),
     parsed_personnel: raw.raw_personnel.split('\n'),
     parsed_run: raw.raw_run.split('\n'),
     parsed_url,
