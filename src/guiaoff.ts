@@ -6,11 +6,11 @@ import {
 
 const url = 'https://guiaoff.com.br/guia/';
 
-type ListItem = {
-  title: string;
-  synopsis: string;
-  personnel: string;
-  run: string;
+type ListRaw = {
+  raw_title: string;
+  raw_synopsis: string;
+  raw_personnel: string;
+  raw_run: string;
 };
 
 main();
@@ -18,14 +18,14 @@ main();
 async function main() {
   const html = await getHTML();
   const listRaw = parseHTML(html);
-  const parsedList = listRaw?.map(parseList);
+  const listParsed = listRaw?.map(parseList);
 
-  if (!parsedList || parseList.length === 0) {
+  if (!listParsed || listParsed.length === 0) {
     console.log('no list items');
     return;
   }
 
-  await Deno.writeTextFile(`./data/plays.json`, JSON.stringify(parsedList));
+  await Deno.writeTextFile(`./data/plays.json`, JSON.stringify(listParsed));
 }
 
 async function getHTML() {
@@ -61,27 +61,27 @@ function parseHTML(html: string) {
       console.log(`Nao parseado: ${title}`);
     }
 
-    return { title, synopsis, personnel, run };
+    return {
+      raw_title: title,
+      raw_synopsis: synopsis,
+      raw_personnel: personnel,
+      raw_run: run,
+    };
   }
 }
 
-function parseList(raw: ListItem) {
+function parseList(raw: ListRaw) {
   const strip = (x: string) => x.replace(/\r?\n|\r/gm, '');
+  const reUrl =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+
+  const parsed_url = raw.raw_run.match(reUrl)?.[0];
 
   return {
-    title: {
-      raw: raw.title,
-    },
-    synopis: {
-      raw: strip(raw.synopsis),
-    },
-    personnel: {
-      raw: raw.personnel,
-      parsed: raw.personnel.split('\n'),
-    },
-    run: {
-      raw: raw.run,
-      parsed: raw.run.split('\n'),
-    },
+    ...raw,
+    parsed_synopis: strip(raw.raw_synopsis),
+    parsed_personnel: raw.raw_personnel.split('\n'),
+    parsed_run: raw.raw_run.split('\n'),
+    parsed_url,
   };
 }
